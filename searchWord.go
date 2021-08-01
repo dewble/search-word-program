@@ -46,8 +46,22 @@ func main() {
 
 }
 
-func GetFileList(path string) ([]string, error) {
-	return filepath.Glob(path)
+func GetFileList(pattern string) ([]string, error) {
+	filelist := []string{}
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error { // (10)
+		if !info.IsDir() {
+			matched, _ := filepath.Match(pattern, info.Name()) // (11)
+			if matched {
+				filelist = append(filelist, path)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return []string{}, err
+	}
+	return filelist, nil
 }
 
 func FindWordInAllFiles(word, path string) []FindInfo {
